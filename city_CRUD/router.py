@@ -36,7 +36,7 @@ async def update_city(
     return await crud.update_city(db=db, city_id=city_id, city=city)
 
 
-@router.delete("/cities/{city_id}/", response_model=schemas.City)
+@router.delete("/cities/{city_id}/", status_code=204)
 async def delete_city(
         city_id: int,
         db: AsyncSession = Depends(get_db),

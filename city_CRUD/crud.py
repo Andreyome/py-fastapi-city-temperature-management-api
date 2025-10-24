@@ -44,4 +44,7 @@ async def delete_city(db: AsyncSession, city_id: int):
     query = delete(models.City).where(models.City.id == city_id)
     result = await db.execute(query)
     await db.commit()
-    return {"id": result.lastrowid}
+    if result.rowcount:
+        return None
+    else:
+        raise HTTPException(status_code=404, detail="City not found")
