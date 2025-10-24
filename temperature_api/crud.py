@@ -14,7 +14,7 @@ async def get_temperature_list(db: AsyncSession):
 async def get_temperature_by_city_id(db: AsyncSession, city_id: int):
     query = select(models.Temperature).where(models.Temperature.city_id == city_id)
     temperature = await db.execute(query)
-    result = temperature.scalar_one_or_none()
+    result = temperature.scalars().all()
     if result:
         return result
     raise HTTPException(status_code=404, detail="City not found")

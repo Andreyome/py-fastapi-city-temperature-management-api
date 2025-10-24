@@ -10,7 +10,7 @@ from city_CRUD import models
 from .models import Temperature
 from city_CRUD.models import City
 
-API_KEY = "YourAPIToken"
+API_KEY = "APIKEY"
 GEOCODE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -37,7 +37,10 @@ async def fetch_temperature(client: httpx.AsyncClient, lat: float, lon: float):
 
 
 async def update_all_temperatures(session: AsyncSession):
-    """Fetch temperatures for all cities and update or create records."""
+    """
+    Fetch temperatures for all cities and store a historical record for each.
+    Each fetch creates a new Temperature record with timestamp.
+    """
     result = await session.execute(select(City))
     cities = result.scalars().all()
 
@@ -50,21 +53,13 @@ async def update_all_temperatures(session: AsyncSession):
 
             temp = await fetch_temperature(client, lat, lon)
 
-            result = await session.execute(select(Temperature).where(Temperature.city_id == city.id))
-            existing_entry = result.scalar_one_or_none()
-
-            if existing_entry:
-                existing_entry.temperature = temp
-                existing_entry.date_time = datetime.utcnow()
-                print(f"🔁 Updated {city.name} temperature to {temp}°C.")
-            else:
-                new_entry = Temperature(
-                    city_id=city.id,
-                    temperature=temp,
-                    date_time=datetime.utcnow()
-                )
-                session.add(new_entry)
-                print(f"🌡️ Added new temperature record for {city.name}: {temp}°C.")
+            new_entry = Temperature(
+                city_id=city.id,
+                temperature=temp,
+                date_time=datetime.utcnow()
+            )
+            session.add(new_entry)
+            print(f"🕒 Recorded {temp}°C for {city.name} at {new_entry.date_time} UTC.")
 
         await session.commit()
-        print("✅ All city temperatures updated.")
+        print("✅ All city temperatures recorded to history.")

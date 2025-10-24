@@ -30,17 +30,15 @@ async def get_city_by_id(db: AsyncSession, city_id: int):
     raise HTTPException(status_code=404, detail="City not found")
 
 async def update_city(db: AsyncSession,city_id: int, city: schemas.CityIn):
-    query = (update(models.City).where(models.City.id == city_id).values(**city.model_dump()).returning(models.City.id, models.City.name, models.City.additional_info))
+    query = (update(models.City).where(models.City.id == city_id).values(**city.model_dump()))
     result = await db.execute(query)
     await db.commit()
-    updated_row = result.first()
-    if not updated_row:
-        return None
-    return {
-        "id": updated_row.id,
-        "name": updated_row.name,
-        "additional_info": updated_row.additional_info
-    }
+    if not result.rowcount:
+        raise HTTPException(status_code=404, detail="City not found")
+    query = select(models.City).where(models.City.id == city_id)
+    city = await db.execute(query)
+    result = city.scalar_one_or_none()
+    return result
 
 async def delete_city(db: AsyncSession, city_id: int):
     query = delete(models.City).where(models.City.id == city_id)

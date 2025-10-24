@@ -10,4 +10,4 @@ class City(Base):
     name = Column(String(255), nullable=False)
     additional_info = Column(String(255))
 
-    temperature = relationship("Temperature", back_populates="city", cascade="all, delete-orphan", uselist=False)
+    temperature = relationship("Temperature", back_populates="city", cascade="all, delete-orphan")

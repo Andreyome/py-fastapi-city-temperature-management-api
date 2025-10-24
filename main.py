@@ -11,6 +11,7 @@ app = FastAPI()
 app.include_router(city_router.router)
 app.include_router(temperature_router.router)
 
+
 @app.post("/temperatures/update")
 async def update_temperatures(session: AsyncSession = Depends(get_db)):
     await update_all_temperatures(session)
